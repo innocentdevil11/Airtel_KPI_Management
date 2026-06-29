@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<header class="page-header">
+  <div>
+    <h1>Dashboard</h1>
+    <p>Local Excel-backed KPI monitoring</p>
+  </div>
+  <a class="btn primary" href="/upload">Upload Report</a>
+</header>
+
+<section class="summary-grid">
+  <div class="summary-card blue"><span>Total KPIs</span><strong>{{ summary.total_kpis }}</strong></div>
+  <div class="summary-card blue"><span>Total Utilizations</span><strong>{{ summary.total_utilizations }}</strong></div>
+  <div class="summary-card red"><span>Critical KPIs</span><strong>{{ summary.critical_kpis }}</strong></div>
+  <div class="summary-card yellow"><span>Warning KPIs</span><strong>{{ summary.warning_kpis }}</strong></div>
+  <div class="summary-card green"><span>Healthy KPIs</span><strong>{{ summary.healthy_kpis }}</strong></div>
+  <div class="summary-card yellow"><span>Pending Remarks</span><strong>{{ summary.pending_remarks }}</strong></div>
+  <div class="summary-card blue"><span>Total Reports</span><strong>{{ summary.total_reports }}</strong></div>
+</section>
+
+<section class="panel-grid">
+  <div class="panel">
+    <h2>Status Distribution</h2>
+    <canvas id="statusChart" data-chart='{{ status_distribution | tojson }}'></canvas>
+  </div>
+  <div class="panel">
+    <h2>Category Distribution</h2>
+    <canvas id="categoryChart" data-chart='{{ category_distribution | tojson }}'></canvas>
+  </div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>
+  drawBarChart("statusChart");
+  drawBarChart("categoryChart");
+</script>
+{% endblock %}

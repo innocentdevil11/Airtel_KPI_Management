@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}{{ record.kpi_name }}{% endblock %}
+{% block content %}
+<header class="page-header">
+  <div>
+    <h1>{{ record.kpi_name }}</h1>
+    <p>{{ record.original_filename }} - {{ record.sheet_name }} - row {{ record.row_number }}</p>
+  </div>
+  <a class="btn" href="/kpis">Back</a>
+</header>
+
+<section class="summary-grid">
+  <div class="summary-card blue"><span>Current Value</span><strong>{{ record.value_text or record.value_number or "-" }}</strong></div>
+  <div class="summary-card blue"><span>Threshold</span><strong>{{ record.threshold }}</strong></div>
+  <div class="summary-card {{ record.status | lower }}"><span>Status</span><strong>{{ record.status }}</strong></div>
+  <div class="summary-card blue"><span>Week</span><strong>{{ record.week_label }}</strong></div>
+</section>
+
+<section class="panel-grid">
+  <div class="panel">
+    <h2>Trend</h2>
+    <canvas id="trendChart" data-chart='{{ history | tojson }}'></canvas>
+  </div>
+  <div class="panel">
+    <h2>Remark</h2>
+    <form action="/kpis/{{ record.id }}/remarks" method="post" class="form-stack">
+      <textarea name="new_remark" rows="7">{{ record.current_remark or "" }}</textarea>
+      <button class="btn primary" type="submit">Save Remark to Edited Copy</button>
+    </form>
+    <p class="hint">Original upload remains unchanged. The app copies the latest active workbook, then edits only {{ record.remarks_cell }}.</p>
+  </div>
+</section>
+
+<section class="panel">
+  <h2>Previous Remarks</h2>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th>Changed At</th><th>Old</th><th>New</th><th>Workbook Copy</th></tr></thead>
+      <tbody>
+      {% for item in remarks %}
+        <tr>
+          <td>{{ item.changed_at }}</td>
+          <td>{{ item.old_remark or "" }}</td>
+          <td>{{ item.new_remark }}</td>
+          <td>{{ item.workbook_path }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>drawLineChart("trendChart");</script>
+{% endblock %}

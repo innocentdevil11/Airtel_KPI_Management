@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Upload Report{% endblock %}
+{% block content %}
+<header class="page-header">
+  <div>
+    <h1>Upload Excel Report</h1>
+    <p>The uploaded workbook is saved as the untouched source file.</p>
+  </div>
+</header>
+
+<section class="panel narrow">
+  <form action="/upload" method="post" enctype="multipart/form-data" class="form-stack">
+    <label>
+      Excel workbook
+      <input type="file" name="file" accept=".xlsx,.xlsm" required>
+    </label>
+    <button class="btn primary" type="submit">Upload and Parse</button>
+  </form>
+</section>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Reports{% endblock %}
+{% block content %}
+<header class="page-header">
+  <div>
+    <h1>Reports</h1>
+    <p>Uploaded source files and latest edited workbook paths.</p>
+  </div>
+  <a class="btn primary" href="/upload">Upload</a>
+</header>
+
+<section class="panel">
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>File</th>
+          <th>Uploaded</th>
+          <th>Rows</th>
+          <th>Critical</th>
+          <th>Pending Remarks</th>
+          <th>Active Workbook</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for report in reports %}
+        <tr>
+          <td>{{ report.original_filename }}</td>
+          <td>{{ report.uploaded_at }}</td>
+          <td>{{ report.total_rows }}</td>
+          <td>{{ report.critical_count or 0 }}</td>
+          <td>{{ report.pending_remarks or 0 }}</td>
+          <td>{{ report.active_path }}</td>
+          <td>
+            <div class="action-row">
+              <a class="btn compact" href="/kpis?report_id={{ report.id }}">Open</a>
+              <a class="btn compact" href="/reports/{{ report.id }}/download">Download Excel</a>
+              <form action="/reports/{{ report.id }}/delete" method="post" onsubmit="return confirm('Delete this report and its local workbook files?');">
+                <button class="btn compact danger" type="submit">Delete</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

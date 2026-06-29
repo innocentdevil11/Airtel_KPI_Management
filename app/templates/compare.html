@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Compare{% endblock %}
+{% block content %}
+<header class="page-header">
+  <div>
+    <h1>Compare Reports</h1>
+    <p>Compare matching KPI names, categories, and weeks.</p>
+  </div>
+</header>
+
+<section class="panel">
+  <form method="get" class="filters">
+    <select name="left" required>
+      <option value="">First report</option>
+      {% for report in reports %}
+      <option value="{{ report.id }}" {% if left == report.id %}selected{% endif %}>{{ report.original_filename }}</option>
+      {% endfor %}
+    </select>
+    <select name="right" required>
+      <option value="">Second report</option>
+      {% for report in reports %}
+      <option value="{{ report.id }}" {% if right == report.id %}selected{% endif %}>{{ report.original_filename }}</option>
+      {% endfor %}
+    </select>
+    <button class="btn primary" type="submit">Compare</button>
+  </form>
+
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th>KPI</th><th>Category</th><th>Week</th><th>First</th><th>Second</th><th>Diff</th><th>Status</th><th>Remarks</th></tr></thead>
+      <tbody>
+      {% for row in comparisons %}
+        <tr>
+          <td>{{ row.kpi_name }}</td>
+          <td>{{ row.category }}</td>
+          <td>{{ row.week_label }}</td>
+          <td>{{ row.left_value }}</td>
+          <td>{{ row.right_value }}</td>
+          <td>{{ row.difference }}</td>
+          <td>{{ row.left_status }} -> {{ row.right_status }}</td>
+          <td>{{ row.left_remark or "" }} / {{ row.right_remark or "" }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

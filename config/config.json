@@ -1,0 +1,5 @@
+{
+  "general_kpi_threshold": 98,
+  "general_utilization_threshold": 75,
+  "special_kpi_thresholds": {}
+}

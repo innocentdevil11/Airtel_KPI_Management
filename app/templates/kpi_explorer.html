@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}KPI Explorer{% endblock %}
+{% block content %}
+<header class="page-header">
+  <div>
+    <h1>KPI Explorer</h1>
+    <p>Search, filter, and open KPI details.</p>
+  </div>
+</header>
+
+<section class="panel">
+  <form class="filters" method="get">
+    <input data-table-search="kpiTable" placeholder="Instant table search">
+    <select name="report_id">
+      <option value="">All reports</option>
+      {% for report in reports %}
+      <option value="{{ report.id }}" {% if filters.report_id == report.id %}selected{% endif %}>{{ report.original_filename }}</option>
+      {% endfor %}
+    </select>
+    <select name="status">
+      <option value="">All statuses</option>
+      {% for status in ["Critical", "Warning", "Healthy", "Pending"] %}
+      <option value="{{ status }}" {% if filters.status == status %}selected{% endif %}>{{ status }}</option>
+      {% endfor %}
+    </select>
+    <select name="category">
+      <option value="">All categories</option>
+      {% for category in categories %}
+      <option value="{{ category.category }}" {% if filters.category == category.category %}selected{% endif %}>{{ category.category }}</option>
+      {% endfor %}
+    </select>
+    <select name="week">
+      <option value="">All weeks</option>
+      {% for week in weeks %}
+      <option value="{{ week.week_label }}" {% if filters.week == week.week_label %}selected{% endif %}>{{ week.week_label }}</option>
+      {% endfor %}
+    </select>
+    <button class="btn" type="submit">Apply</button>
+  </form>
+
+  <div class="table-wrap">
+    <table id="kpiTable" class="data-table">
+      <thead>
+        <tr>
+          <th>KPI</th>
+          <th>Category</th>
+          <th>Week</th>
+          <th>Value</th>
+          <th>Status</th>
+          <th>Remark</th>
+          <th>Report</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for record in records %}
+        <tr onclick="window.location='/kpis/{{ record.id }}'">
+          <td>{{ record.kpi_name }}</td>
+          <td>{{ record.category or "" }}</td>
+          <td>{{ record.week_label }}</td>
+          <td>{{ record.value_text or record.value_number or "" }}</td>
+          <td><span class="status {{ record.status | lower }}">{{ record.status }}</span></td>
+          <td>{{ record.current_remark or "" }}</td>
+          <td>{{ record.original_filename }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}
