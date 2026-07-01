@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}KPI Analysis{% endblock %}
+{% block content %}
+<header class="page-header reveal">
+  <div>
+    <h1>KPI Analysis</h1>
+    <p>Analyze one KPI week by week with value movement, threshold context, and remarks.</p>
+  </div>
+  <a class="btn" href="/kpis">Open Explorer</a>
+</header>
+
+<section class="panel reveal">
+  <form method="get" class="filters analysis-picker">
+    <select name="key" required>
+      {% for option in options %}
+      <option value="{{ option.report_id }}||{{ option.category }}||{{ option.kpi_name }}"
+        {% if selected_option and selected_option.report_id == option.report_id and selected_option.category == option.category and selected_option.kpi_name == option.kpi_name %}selected{% endif %}>
+        {{ option.kpi_name }}{% if option.category %} - {{ option.category }}{% endif %} / {{ option.original_filename }}
+      </option>
+      {% endfor %}
+    </select>
+    <button class="btn primary" type="submit">Analyze</button>
+  </form>
+</section>
+
+<section class="analysis-hero reveal">
+  <div>
+    <span class="eyebrow">Narrative</span>
+    <h2>{{ selected_option.kpi_name if selected_option else "No KPI selected" }}</h2>
+    <p>{{ narrative }}</p>
+  </div>
+  <div class="analysis-score">
+    <span>Total Change</span>
+    <strong>
+      {% if total_change is not none %}{{ "%.2f"|format(total_change) }}{% else %}-{% endif %}
+    </strong>
+    <small>{% if total_change_pct is not none %}{{ "%.2f"|format(total_change_pct) }}%{% else %}No percentage movement{% endif %}</small>
+  </div>
+</section>
+
+<section class="summary-grid reveal">
+  <div class="summary-card blue"><span>First Value</span><strong>{% if first_value is not none %}{{ "%.2f"|format(first_value) }}{% else %}-{% endif %}</strong></div>
+  <div class="summary-card teal"><span>Latest Value</span><strong>{% if latest_value is not none %}{{ "%.2f"|format(latest_value) }}{% else %}-{% endif %}</strong></div>
+  <div class="summary-card purple"><span>Average</span><strong>{% if average_value is not none %}{{ "%.2f"|format(average_value) }}{% else %}-{% endif %}</strong></div>
+  <div class="summary-card yellow"><span>Warning Weeks</span><strong>{{ warning_count }}</strong></div>
+  <div class="summary-card red"><span>Critical Weeks</span><strong>{{ critical_count }}</strong></div>
+  <div class="summary-card green"><span>Weeks With Remarks</span><strong>{{ remarks_count }}</strong></div>
+</section>
+
+<section class="panel-grid reveal">
+  <div class="panel chart-panel wide-panel">
+    <h2>Week Wise Value And Threshold</h2>
+    <canvas id="analysisTrendChart" data-chart='{{ rows | tojson }}'></canvas>
+  </div>
+  <div class="panel">
+    <h2>Movement Notes</h2>
+    <div class="timeline compact-timeline">
+      {% for row in rows %}
+      <div class="timeline-item {{ row.status | lower }}">
+        <strong>{{ row.week_label }}</strong>
+        <span>
+          {{ row.value_text or row.value_number or "-" }}
+          {% if row.value_delta is not none %}
+          <em class="delta {% if row.value_delta > 0 %}up{% elif row.value_delta < 0 %}down{% endif %}">
+            {{ "%+.2f"|format(row.value_delta) }}
+          </em>
+          {% endif %}
+        </span>
+        {% if row.current_remark %}<p>{{ row.current_remark }}</p>{% endif %}
+      </div>
+      {% else %}
+      <p class="empty-state">Upload and select a KPI to begin analysis.</p>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="panel reveal">
+  <h2>Week Wise Detail</h2>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th>Week</th><th>Value</th><th>Change</th><th>Change %</th><th>Threshold</th><th>Status</th><th>Remark</th></tr></thead>
+      <tbody>
+      {% for row in rows %}
+        <tr>
+          <td>{{ row.week_label }}</td>
+          <td>{{ row.value_text or row.value_number or "" }}</td>
+          <td>{% if row.value_delta is not none %}{{ "%+.2f"|format(row.value_delta) }}{% else %}-{% endif %}</td>
+          <td>{% if row.value_delta_pct is not none %}{{ "%+.2f"|format(row.value_delta_pct) }}%{% else %}-{% endif %}</td>
+          <td>{{ row.threshold }}</td>
+          <td><span class="status {{ row.status | lower }}">{{ row.status }}</span></td>
+          <td>{{ row.current_remark or "" }}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="7" class="empty-state">No rows to analyze.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>drawTrendChart("analysisTrendChart");</script>
+{% endblock %}

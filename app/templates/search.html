@@ -1,31 +1,46 @@
 {% extends "base.html" %}
 {% block title %}Search{% endblock %}
 {% block content %}
-<header class="page-header">
+<header class="page-header reveal">
   <div>
     <h1>Global Search</h1>
-    <p>Find KPI names, categories, remarks, weeks, or workbook names.</p>
+    <p>Search KPI names, categories, remarks, statuses, weeks, and workbook names.</p>
   </div>
 </header>
 
-<section class="panel">
+<section class="panel reveal">
   <form method="get" class="filters">
-    <input name="q" value="{{ q }}" placeholder="Search everything">
+    <input name="q" value="{{ q }}" placeholder="Try: subscriber warning week 23">
+    <select name="status">
+      <option value="">All statuses</option>
+      {% for option in ["Critical", "Warning", "Healthy", "Pending"] %}
+      <option value="{{ option }}" {% if status == option %}selected{% endif %}>{{ option }}</option>
+      {% endfor %}
+    </select>
     <button class="btn primary" type="submit">Search</button>
+    <a class="btn" href="/search">Reset</a>
   </form>
+  <div class="result-strip">
+    <strong>{{ records|length }}</strong>
+    <span>results ranked by status urgency</span>
+  </div>
+  <input class="table-search-wide" data-table-search="searchTable" placeholder="Filter visible results instantly">
   <div class="table-wrap">
-    <table class="data-table">
-      <thead><tr><th>KPI</th><th>Category</th><th>Week</th><th>Status</th><th>Remark</th><th>Report</th></tr></thead>
+    <table id="searchTable" class="data-table">
+      <thead><tr><th>KPI</th><th>Category</th><th>Week</th><th>Value</th><th>Status</th><th>Remark</th><th>Report</th></tr></thead>
       <tbody>
       {% for record in records %}
         <tr onclick="window.location='/kpis/{{ record.id }}'">
           <td>{{ record.kpi_name }}</td>
           <td>{{ record.category or "" }}</td>
           <td>{{ record.week_label }}</td>
-          <td>{{ record.status }}</td>
+          <td>{{ record.value_text or record.value_number or "" }}</td>
+          <td><span class="status {{ record.status | lower }}">{{ record.status }}</span></td>
           <td>{{ record.current_remark or "" }}</td>
           <td>{{ record.original_filename }}</td>
         </tr>
+      {% else %}
+        <tr><td colspan="7" class="empty-state">No matching KPI rows found.</td></tr>
       {% endfor %}
       </tbody>
     </table>

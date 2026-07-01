@@ -1,14 +1,15 @@
 {% extends "base.html" %}
 {% block title %}KPI Explorer{% endblock %}
 {% block content %}
-<header class="page-header">
+<header class="page-header reveal">
   <div>
     <h1>KPI Explorer</h1>
-    <p>Search, filter, and open KPI details.</p>
+    <p>Search, filter, compare movement, and open KPI details.</p>
   </div>
+  <a class="btn" href="/analysis">KPI Analysis</a>
 </header>
 
-<section class="panel">
+<section class="panel reveal">
   <form class="filters" method="get">
     <input data-table-search="kpiTable" placeholder="Instant table search">
     <select name="report_id">
@@ -35,8 +36,14 @@
       <option value="{{ week.week_label }}" {% if filters.week == week.week_label %}selected{% endif %}>{{ week.week_label }}</option>
       {% endfor %}
     </select>
-    <button class="btn" type="submit">Apply</button>
+    <button class="btn primary" type="submit">Apply</button>
+    <a class="btn" href="/kpis">Reset</a>
   </form>
+
+  <div class="result-strip">
+    <strong>{{ records|length }}</strong>
+    <span>matching KPI rows</span>
+  </div>
 
   <div class="table-wrap">
     <table id="kpiTable" class="data-table">
@@ -46,6 +53,9 @@
           <th>Category</th>
           <th>Week</th>
           <th>Value</th>
+          <th>Prev</th>
+          <th>Change</th>
+          <th>Threshold</th>
           <th>Status</th>
           <th>Remark</th>
           <th>Report</th>
@@ -58,10 +68,19 @@
           <td>{{ record.category or "" }}</td>
           <td>{{ record.week_label }}</td>
           <td>{{ record.value_text or record.value_number or "" }}</td>
+          <td>{% if record.previous_value is not none %}{{ "%.2f"|format(record.previous_value) }}{% else %}-{% endif %}</td>
+          <td>
+            {% if record.value_delta is not none %}
+            <span class="delta {% if record.value_delta > 0 %}up{% elif record.value_delta < 0 %}down{% endif %}">{{ "%+.2f"|format(record.value_delta) }}</span>
+            {% else %}-{% endif %}
+          </td>
+          <td>{{ record.threshold }}</td>
           <td><span class="status {{ record.status | lower }}">{{ record.status }}</span></td>
           <td>{{ record.current_remark or "" }}</td>
           <td>{{ record.original_filename }}</td>
         </tr>
+        {% else %}
+        <tr><td colspan="10" class="empty-state">No KPI rows match these filters.</td></tr>
         {% endfor %}
       </tbody>
     </table>

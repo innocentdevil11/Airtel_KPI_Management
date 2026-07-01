@@ -1,15 +1,22 @@
 {% extends "base.html" %}
 {% block title %}Reports{% endblock %}
 {% block content %}
-<header class="page-header">
+<header class="page-header reveal">
   <div>
     <h1>Reports</h1>
     <p>Uploaded source files and latest edited workbook paths.</p>
   </div>
-  <a class="btn primary" href="/upload">Upload</a>
+  <div class="action-row">
+    <a class="btn primary" href="/upload">Upload</a>
+    {% if reports %}
+    <form action="/reports/delete-all" method="post" onsubmit="return confirm('Remove all uploaded reports, parsed KPI data, and local workbook copies?');">
+      <button class="btn danger" type="submit">Clear All Data</button>
+    </form>
+    {% endif %}
+  </div>
 </header>
 
-<section class="panel">
+<section class="panel reveal">
   <div class="table-wrap">
     <table class="data-table">
       <thead>
@@ -31,7 +38,7 @@
           <td>{{ report.total_rows }}</td>
           <td>{{ report.critical_count or 0 }}</td>
           <td>{{ report.pending_remarks or 0 }}</td>
-          <td>{{ report.active_path }}</td>
+          <td class="path-cell">{{ report.active_path }}</td>
           <td>
             <div class="action-row">
               <a class="btn compact" href="/kpis?report_id={{ report.id }}">Open</a>
@@ -42,6 +49,8 @@
             </div>
           </td>
         </tr>
+      {% else %}
+        <tr><td colspan="7" class="empty-state">No reports uploaded yet.</td></tr>
       {% endfor %}
       </tbody>
     </table>

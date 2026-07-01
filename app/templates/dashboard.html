@@ -1,38 +1,85 @@
 {% extends "base.html" %}
 {% block title %}Dashboard{% endblock %}
 {% block content %}
-<header class="page-header">
+<header class="page-header reveal">
   <div>
     <h1>Dashboard</h1>
-    <p>Local Excel-backed KPI monitoring</p>
+    <p>Local Excel-backed KPI monitoring with status, threshold, and movement signals.</p>
   </div>
-  <a class="btn primary" href="/upload">Upload Report</a>
+  <div class="action-row">
+    <a class="btn primary" href="/upload">Upload Report</a>
+    <a class="btn" href="/analysis">Analyze KPI</a>
+  </div>
 </header>
 
-<section class="summary-grid">
+<section class="summary-grid reveal">
   <div class="summary-card blue"><span>Total KPIs</span><strong>{{ summary.total_kpis }}</strong></div>
-  <div class="summary-card blue"><span>Total Utilizations</span><strong>{{ summary.total_utilizations }}</strong></div>
+  <div class="summary-card teal"><span>Total Utilizations</span><strong>{{ summary.total_utilizations }}</strong></div>
   <div class="summary-card red"><span>Critical KPIs</span><strong>{{ summary.critical_kpis }}</strong></div>
   <div class="summary-card yellow"><span>Warning KPIs</span><strong>{{ summary.warning_kpis }}</strong></div>
   <div class="summary-card green"><span>Healthy KPIs</span><strong>{{ summary.healthy_kpis }}</strong></div>
-  <div class="summary-card yellow"><span>Pending Remarks</span><strong>{{ summary.pending_remarks }}</strong></div>
+  <div class="summary-card purple"><span>Pending Remarks</span><strong>{{ summary.pending_remarks }}</strong></div>
   <div class="summary-card blue"><span>Total Reports</span><strong>{{ summary.total_reports }}</strong></div>
 </section>
 
-<section class="panel-grid">
-  <div class="panel">
+<section class="panel-grid reveal">
+  <div class="panel chart-panel">
     <h2>Status Distribution</h2>
     <canvas id="statusChart" data-chart='{{ status_distribution | tojson }}'></canvas>
   </div>
-  <div class="panel">
+  <div class="panel chart-panel">
     <h2>Category Distribution</h2>
     <canvas id="categoryChart" data-chart='{{ category_distribution | tojson }}'></canvas>
+  </div>
+</section>
+
+<section class="panel-grid reveal">
+  <div class="panel chart-panel wide-panel">
+    <h2>Week Wise Status Trend</h2>
+    <canvas id="weeklyStatusChart" data-chart='{{ weekly_status | tojson }}'></canvas>
+  </div>
+  <div class="panel chart-panel">
+    <h2>Metric Mix</h2>
+    <canvas id="metricChart" data-chart='{{ metric_distribution | tojson }}'></canvas>
+  </div>
+</section>
+
+<section class="panel reveal">
+  <div class="section-title-row">
+    <div>
+      <h2>Top KPI Risks</h2>
+      <p class="hint">Critical and warning rows closest to operational attention.</p>
+    </div>
+    <a class="btn compact" href="/kpis?status=Critical">Open criticals</a>
+  </div>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th>KPI</th><th>Category</th><th>Week</th><th>Value</th><th>Threshold</th><th>Gap</th><th>Status</th><th>Report</th></tr></thead>
+      <tbody>
+      {% for row in top_risks %}
+        <tr>
+          <td>{{ row.kpi_name }}</td>
+          <td>{{ row.category }}</td>
+          <td>{{ row.week_label }}</td>
+          <td>{{ row.value_number }}</td>
+          <td>{{ row.threshold }}</td>
+          <td>{{ "%.2f"|format(row.threshold_gap or 0) }}</td>
+          <td><span class="status {{ row.status | lower }}">{{ row.status }}</span></td>
+          <td>{{ row.original_filename }}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="8" class="empty-state">No critical or warning KPI rows found.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
   </div>
 </section>
 {% endblock %}
 {% block scripts %}
 <script>
-  drawBarChart("statusChart");
-  drawBarChart("categoryChart");
+  drawDoughnutChart("statusChart");
+  drawHorizontalBarChart("categoryChart");
+  drawStackedStatusChart("weeklyStatusChart");
+  drawDoughnutChart("metricChart");
 </script>
 {% endblock %}

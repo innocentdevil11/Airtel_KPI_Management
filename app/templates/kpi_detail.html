@@ -1,24 +1,29 @@
 {% extends "base.html" %}
 {% block title %}{{ record.kpi_name }}{% endblock %}
 {% block content %}
-<header class="page-header">
+<header class="page-header reveal">
   <div>
     <h1>{{ record.kpi_name }}</h1>
     <p>{{ record.original_filename }} - {{ record.sheet_name }} - row {{ record.row_number }}</p>
   </div>
-  <a class="btn" href="/kpis">Back</a>
+  <div class="action-row">
+    <a class="btn" href="/analysis?key={{ record.report_id }}||{{ record.category or '' }}||{{ record.kpi_name }}">Analyze</a>
+    <a class="btn" href="/kpis">Back</a>
+  </div>
 </header>
 
-<section class="summary-grid">
+<section class="summary-grid reveal">
   <div class="summary-card blue"><span>Current Value</span><strong>{{ record.value_text or record.value_number or "-" }}</strong></div>
+  <div class="summary-card teal"><span>Previous Value</span><strong>{% if selected_previous is not none %}{{ "%.2f"|format(selected_previous) }}{% else %}-{% endif %}</strong></div>
+  <div class="summary-card purple"><span>Change</span><strong>{% if selected_delta is not none %}{{ "%+.2f"|format(selected_delta) }}{% else %}-{% endif %}</strong></div>
   <div class="summary-card blue"><span>Threshold</span><strong>{{ record.threshold }}</strong></div>
   <div class="summary-card {{ record.status | lower }}"><span>Status</span><strong>{{ record.status }}</strong></div>
-  <div class="summary-card blue"><span>Week</span><strong>{{ record.week_label }}</strong></div>
+  <div class="summary-card yellow"><span>Week</span><strong>{{ record.week_label }}</strong></div>
 </section>
 
-<section class="panel-grid">
-  <div class="panel">
-    <h2>Trend</h2>
+<section class="panel-grid reveal">
+  <div class="panel chart-panel wide-panel">
+    <h2>Trend With Threshold</h2>
     <canvas id="trendChart" data-chart='{{ history | tojson }}'></canvas>
   </div>
   <div class="panel">
@@ -31,7 +36,7 @@
   </div>
 </section>
 
-<section class="panel">
+<section class="panel reveal">
   <h2>Previous Remarks</h2>
   <div class="table-wrap">
     <table class="data-table">
@@ -44,6 +49,8 @@
           <td>{{ item.new_remark }}</td>
           <td>{{ item.workbook_path }}</td>
         </tr>
+      {% else %}
+        <tr><td colspan="4" class="empty-state">No remark changes saved yet.</td></tr>
       {% endfor %}
       </tbody>
     </table>
@@ -51,5 +58,5 @@
 </section>
 {% endblock %}
 {% block scripts %}
-<script>drawLineChart("trendChart");</script>
+<script>drawTrendChart("trendChart");</script>
 {% endblock %}

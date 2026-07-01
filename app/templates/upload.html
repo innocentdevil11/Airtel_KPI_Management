@@ -1,20 +1,59 @@
 {% extends "base.html" %}
 {% block title %}Upload Report{% endblock %}
 {% block content %}
-<header class="page-header">
+<header class="page-header reveal">
   <div>
     <h1>Upload Excel Report</h1>
     <p>The uploaded workbook is saved as the untouched source file.</p>
   </div>
 </header>
 
-<section class="panel narrow">
+<section class="panel narrow reveal">
   <form action="/upload" method="post" enctype="multipart/form-data" class="form-stack">
     <label>
       Excel workbook
       <input type="file" name="file" accept=".xlsx,.xlsm" required>
     </label>
+    <label class="check-row">
+      <input type="checkbox" name="clear_existing" value="1">
+      Remove all existing uploaded report data before parsing this file
+    </label>
     <button class="btn primary" type="submit">Upload and Parse</button>
   </form>
+</section>
+
+<section class="panel reveal">
+  <div class="section-title-row">
+    <div>
+      <h2>Current Uploaded Data</h2>
+      <p class="hint">Remove individual reports or clear everything before uploading a fresh workbook.</p>
+    </div>
+    {% if reports %}
+    <form action="/reports/delete-all" method="post" onsubmit="return confirm('Remove all uploaded reports, parsed KPI data, and local workbook copies?');">
+      <button class="btn danger" type="submit">Clear All Data</button>
+    </form>
+    {% endif %}
+  </div>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th>Report</th><th>Uploaded</th><th>Rows</th><th>Action</th></tr></thead>
+      <tbody>
+      {% for report in reports %}
+        <tr>
+          <td>{{ report.original_filename }}</td>
+          <td>{{ report.uploaded_at }}</td>
+          <td>{{ report.total_rows }}</td>
+          <td>
+            <form action="/reports/{{ report.id }}/delete" method="post" onsubmit="return confirm('Delete this report and its local workbook files?');">
+              <button class="btn compact danger" type="submit">Remove</button>
+            </form>
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="4" class="empty-state">No uploaded reports yet.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
 </section>
 {% endblock %}
